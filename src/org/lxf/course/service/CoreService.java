@@ -184,7 +184,7 @@ public class CoreService {
                         respContent = "周边搜索菜单项被点击！";  
                     } else if (eventKey.equals("14")) {
                     	respContent = TodayInHistoryService.getTodayInHistoryInfo();//为保证合法长度，这里截取了
-//                        respContent = "历史上的今天菜单项被点击！";  
+//                      respContent = "历史上的今天菜单项被点击！";  
                     } else if (eventKey.equals("21")) {  
                         respContent = "歌曲点播菜单项被点击！";  
                     } else if (eventKey.equals("22")) {  
@@ -201,7 +201,8 @@ public class CoreService {
                         respContent = "电影排行榜菜单项被点击！";  
                     } else if (eventKey.equals("33")) {  
                         respContent = "幽默笑话菜单项被点击！";  
-                    }  
+                    } 
+//                    34为view类型的菜单，在创建菜单的时候已经定义好了点击动作(直接跳转)，这里不需要第三方再次进行干预
                 } 
                 textMessage.setContent(respContent);
     			respMessage = MessageUtil.textMessageToXml(textMessage);

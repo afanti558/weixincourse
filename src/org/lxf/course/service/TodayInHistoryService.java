@@ -92,7 +92,7 @@ public class TodayInHistoryService {
 				// 在每行末尾追加2个换行符
 				if (!"".equals(info)) {
 					buffer.append(hrefsb).append(">");
-					buffer.append(info).append("<a>\n\n");
+					buffer.append(info).append("</a>\n\n");
 				}
 			}
 		}

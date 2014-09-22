@@ -61,7 +61,7 @@ public class WeixinUtil {
 		
 		// 调用接口创建菜单
 		log.info("调用接口发起POST请求");
-		JSONObject jsonObject = httpRequests(url, "POST", jsonMenu);
+		JSONObject jsonObject = httpsRequests(url, "POST", jsonMenu);
 //		JSONObject jsonObject = null;
 		if (null != jsonObject) {
 			if (0 != jsonObject.getInt("errcode")) {
@@ -86,7 +86,7 @@ public class WeixinUtil {
 
 		String requestUrl = access_token_url.replace("APPID", appid).replace("APPSECRET", appsecret);
 		log.info("调用接口发起GET请求");
-		JSONObject jsonObject = httpRequests(requestUrl, "GET", null);
+		JSONObject jsonObject = httpsRequests(requestUrl, "GET", null);
 //		JSONObject jsonObject = null;
 		// 如果请求成功
 		if (null != jsonObject) {
@@ -113,7 +113,7 @@ public class WeixinUtil {
 	 * @param outputStr 提交的数据
 	 * @return JSONObject(通过JSONObject.get(key)的方式获取json对象的属性值)
 	 */
-	public static JSONObject httpRequests(String requestUrl, String requestMethod, String outputStr) {
+	public static JSONObject httpsRequests(String requestUrl, String requestMethod, String outputStr) {
 		JSONObject jsonObject = null;
 		StringBuffer buffer = new StringBuffer();
 		try {
@@ -177,7 +177,7 @@ public class WeixinUtil {
      * @return JSONObject
      * @throws Exception
      */
-    public static JSONObject send(String requestUrl, String fileType, String filePath) throws Exception {  
+    public static JSONObject httpRequests(String requestUrl, String fileType, String filePath) throws Exception {  
     	JSONObject jsonObject = null;
         String result = null;  
         File file = new File(filePath);  
@@ -252,12 +252,12 @@ public class WeixinUtil {
         return jsonObject;  
     }
     
-//    public static void main(String args[]) throws Exception{
-////    	public static String media_upload_url = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
-//    	String requestUrl = media_upload_url.replace("ACCESS_TOKEN", "dZO-wSB7St1B7SjzplzZ23gN_SAV2tvrlE_c8DRQ4FkN5C-ueYN_vG0s7sqZMziZJG4rO3gvqrnWtFeRxs850g").replace("TYPE", "voice");
-//    	String filePath = "G:"+File.separator+"hello.mp3";
-//    	String fileType = "mp3";
-//    	JSONObject jsonObject = send(requestUrl, fileType, filePath);
-//    	System.out.println("*****"+jsonObject.toString());
-//    }
+    public static void main(String args[]) throws Exception{
+//    	public static String media_upload_url = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
+    	String requestUrl = media_upload_url.replace("ACCESS_TOKEN", "dZO-wSB7St1B7SjzplzZ23gN_SAV2tvrlE_c8DRQ4FkN5C-ueYN_vG0s7sqZMziZJG4rO3gvqrnWtFeRxs850g").replace("TYPE", "voice");
+    	String filePath = "G:"+File.separator+"hello.mp3";
+    	String fileType = "mp3";
+    	JSONObject jsonObject = httpRequests(requestUrl, fileType, filePath);
+    	System.out.println("*****"+jsonObject.toString());
+    }
 }

@@ -38,66 +38,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-
 public final class HttpHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpHelper.class);
 
-	public static void main(String[] args) {
-		System.out.println(getRequestResults("http://localhost:8080/servletCourse"));
-	}
-
 	/**
-	 * 璇锋眰鏁版嵁
-	 * 
-	 * @param requrl
-	 * @param params
+	 * 返回http请求得到的数据
+	 * @param requrl 请求路径
+	 * @param reqMethod 请求方法
+	 * @param params 请求参数(json格式，如果没有为null)
 	 * @return
 	 */
-	public static String getRequestResults(String requrl) {
-		
-		URL url = null;
-		HttpURLConnection con = null;
-		InputStream is = null;
-		StringBuffer result = new StringBuffer();
-		try {
-			url = new URL(requrl);
-			con = (HttpURLConnection) url.openConnection();
-			con.setConnectTimeout(20 * 1000);
-			con.setDoInput(true);
-			con.setDoOutput(true);
-			con.setUseCaches(false);
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Connection", "Keep-Alive");// 鎸佷箙閾炬帴
-			con.setRequestProperty("Charset", "UTF-8");
-			System.out.println(con);
-			is = con.getInputStream();
-			System.out.println(is);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"));
-			String line ="";
-			while ((line = reader.readLine()) != null) {
-				result.append(line);
-			}
-			is.close();
-		} catch (MalformedURLException e) {
-			LOGGER.info("MalformedURLException", e.fillInStackTrace());
-		} catch (IOException e) {
-			LOGGER.info("IOException", e.fillInStackTrace());
-		} finally {
-			if (con != null) {
-				con.disconnect();
-			}
-		}
-		return result.toString();
-	}
-
-	/**
-	 * 璇锋眰鏁版嵁
-	 * 
-	 * @param requrl
-	 * @param params
-	 * @return
-	 */
-	public static String getRequestResults(String requrl, String params) {
+	public static String getHttpRequestResults(String requrl,String reqMethod , String params) {
 		URL url = null;
 		HttpURLConnection con = null;
 		DataOutputStream dos = null;
@@ -110,18 +61,23 @@ public final class HttpHelper {
 			con.setDoInput(true);
 			con.setDoOutput(true);
 			con.setUseCaches(false);
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Connection", "Keep-Alive");// 鎸佷箙閾炬帴
+			//提交方式
+			con.setRequestMethod(reqMethod);
+			if("GET".equals(reqMethod)){
+				con.connect();
+			}
+			//设置头信息
+			con.setRequestProperty("Connection", "Keep-Alive");
 			con.setRequestProperty("Charset", "UTF-8");
+			
 			dos = new DataOutputStream(con.getOutputStream());
-			if (params != null) {
-				String param = "param=" + params;
+			if (null != params) {
+				String param = "param=" + params;//这个参数固定格式json
 				dos.write(param.getBytes("UTF-8"));
 				dos.flush();
 			}
 			is = con.getInputStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					is, "utf-8"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				result.append(line);
@@ -138,13 +94,12 @@ public final class HttpHelper {
 			}
 		}
 		return result.toString();
-
 	}
 
 
 
 	/**
-	 * 鑾峰彇杩滅▼璁块棶IP
+	 * 获取IP
 	 * 
 	 * @param request
 	 * @return
@@ -173,47 +128,20 @@ public final class HttpHelper {
 			e.printStackTrace();
 		}
 		return date2.getTime();
-
 	}
-
-	public static String getRequestResultWithGBK(String requrl) {
-		URL url = null;
-		HttpURLConnection con = null;
-		InputStream is = null;
-		StringBuffer result = new StringBuffer();
-		try {
-			url = new URL(requrl);
-			con = (HttpURLConnection) url.openConnection();
-			con.setConnectTimeout(20 * 1000);
-			con.setDoInput(true);
-			con.setDoOutput(true);
-			con.setUseCaches(false);
-			con.setRequestMethod("GET");
-			con.setRequestProperty("Connection", "Keep-Alive");// 鎸佷箙閾炬帴
-			con.setRequestProperty("Charset", "GBK");
-			is = con.getInputStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is, "GBK"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				result.append(line);
-			}
-			is.close();
-		} catch (MalformedURLException e) {
-			LOGGER.info("MalformedURLException", e.fillInStackTrace());
-		} catch (IOException e) {
-			LOGGER.info("IOException", e.fillInStackTrace());
-		} finally {
-			if (con != null) {
-				con.disconnect();
-			}
-		}
-		return result.toString();
-
+	
+	//test请求
+	public static void main(String[] args) {
+		
+		System.out.println(getHttpRequestResults("http://localhost:8080/servletCourse","POST",null));
 	}
-
 }
 
-
+	/**
+	 * 线程类
+	 * @author ycl
+	 *
+	 */
 class MyThread implements Runnable{
     private  String name;
 	public MyThread(String name){
@@ -224,7 +152,7 @@ class MyThread implements Runnable{
 	}
 	@Override
 	public void run() {
-		HttpHelper.getRequestResults("http://localhost:8080/tempms/guest");
+		HttpHelper.getHttpRequestResults("http://localhost:8080/tempms/guest","POST",null);
 	}
 	
 }

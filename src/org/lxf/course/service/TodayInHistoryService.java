@@ -71,45 +71,46 @@ public class TodayInHistoryService {
 		StringBuffer buffer = null;
 		// 日期标签：区分是昨天还是今天
 		String dateTag = getMonthDay(0);//9月18日
-
 		Pattern p = Pattern.compile("(.*)(<div class=\"listren\">)(.*?)(</div>)(.*)");
 		Matcher m = p.matcher(html);
 		if (m.matches()) {
 			buffer = new StringBuffer();
 			if (m.group(3).contains(getMonthDay(-1)))
 				dateTag = getMonthDay(-1);
-
 			// 拼装标题
 			buffer.append("≡≡ ").append("历史上的").append(dateTag).append(" ≡≡").append("\n\n");
-
 			// 抽取需要的数据
-//			for (String info : m.group(3).split("&nbsp;&nbsp;")) {
-//				System.out.println(info);
-//				int n = info.indexOf("href");
-//				info = info.replace(dateTag, "").replace("（图）", "").replaceAll("</?[^>]+>", "").trim();
-//				// 在每行末尾追加2个换行符
-//				if (!"".equals(info)) {
-//					buffer.append(info).append("\n\n");
-//				}
-//			}
-			for (int i = 0;i<m.group(3).split("&nbsp;&nbsp;").length;i++) {
-				String info = m.group(3).split("&nbsp;&nbsp;")[i];
+//			for (int i = 0;i<m.group(3).split("&nbsp;&nbsp;").length-1;i++) {
+			for (int i = 0;i<2;i++) {
+			String info = m.group(3).split("&nbsp;&nbsp;")[i];
 				int begin = info.indexOf("<a");
 				int end = info.indexOf("/\"");
 				String href = info.substring(begin, (end+2));
 				StringBuffer hrefsb = new StringBuffer(href);
 				hrefsb.insert(9, "http://www.rijiben.com");
-				info = info.replace(dateTag, "").replace("（图）", "").replaceAll("</?[^>]+>", "").trim();
+				info = info.replace(dateTag, "").replace("（图）", "").replaceAll("<[^>]+>", "").trim();
 				// 在每行末尾追加2个换行符
 				if (!"".equals(info)) {
 					buffer.append(hrefsb).append(">");
-					buffer.append(info).append("<a>\n\n");
+					buffer.append(info).append("</a>\n\n");
 				}
 			}
 		}
 		// 将buffer最后两个换行符移除并返回
 		return (null == buffer) ? null : buffer.substring(0, buffer.lastIndexOf("\n\n"));
 	}
+
+
+	/**
+	 * 通过main在本地测试
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		String info = getTodayInHistoryInfo();
+		log.info("info::::"+info);
+	}
+		
 
 	/**
 	 * 获取前/后n天日期(M月d日)
@@ -131,20 +132,9 @@ public class TodayInHistoryService {
 	public static String getTodayInHistoryInfo() {
 		// 获取网页源代码
 		String html = httpRequest("http://www.rijiben.com/");
-//		log.info("html::::"+html);
 		// 从网页中抽取信息
 		String result = extract(html);
-//		log.info("result::::"+result);
 		return result;
 	}
 
-	/**
-	 * 通过main在本地测试
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		String info = getTodayInHistoryInfo();
-		log.info("info::::"+info);
-	}
 }

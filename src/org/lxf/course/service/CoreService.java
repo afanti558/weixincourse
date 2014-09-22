@@ -86,18 +86,48 @@ public class CoreService {
 			}
 			// 图片消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {
+				//图片消息媒体id，可以调用多媒体文件下载接口拉取数据
+				String mediaId = requestMap.get("MediaId");
+				//图片链接
+				String picUrl = requestMap.get("PicUrl");
+				//消息id，64位整型
+				String msgID = requestMap.get("MsgID");
+				LOGGER.info("发送的图片消息链接(PicUrl)为:"+picUrl);
+				
 				respContent = "您发送的是图片消息！";
 				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
 			}
 			// 地理位置消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LOCATION)) {
+				//地理位置维度
+				String location_x = requestMap.get("Location_X");
+				//地理位置经度
+				String location_y = requestMap.get("Location_Y");
+				//地图缩放大小
+				String scale = requestMap.get("Scale");
+				//地理位置信息
+				String label = requestMap.get("Label");
+				//消息id，64位整型
+				String msgID = requestMap.get("MsgID");
+				LOGGER.info("发送的地理位置纬度(Location_X)为:"+location_x+"，发送的地理位置经度(Location_Y)为:"+location_y+"，地图缩放大小(Scale)为："+scale);
+				
 				respContent = "您发送的是地理位置消息！";
 				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
 			}
 			// 链接消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LINK)) {
+				//消息标题
+				String title = requestMap.get("Title");
+				//消息描述
+				String description = requestMap.get("Description");
+				//消息链接
+				String url = requestMap.get("Url");
+				//消息id，64位整型
+				String msgID = requestMap.get("MsgID");
+				LOGGER.info("发送的链接消息的标题(Title)为:"+title+"，链接的描述(Description)为："+description+",链接的地址(Url)为："+url);
+				
 				respContent = "您发送的是链接消息！";
 				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
@@ -110,11 +140,14 @@ public class CoreService {
 				String format = requestMap.get("Format");
 				//消息id，64位整型
 				String msgID = requestMap.get("MsgID");
-				//识别之后的内容
-				String recognition = requestMap.get("Recognition");
-				LOGGER.info("发送的语音消息的媒体id:"+mediaId+"，识别之后的内容为："+recognition);
+				//识别之后的内容(语音识别接口没有开通)
+//				String recognition = requestMap.get("Recognition");
+//				LOGGER.info("发送的语音消息的媒体id(MediaId)为:"+mediaId+"，识别之后的内容(Recognition)为："+recognition+",语音格式(format)为："+format);
+				LOGGER.info("发送的语音消息的媒体id(MediaId)为:"+mediaId+",语音格式(format)为："+format);
 				
-				textMessage.setContent(recognition);
+//				textMessage.setContent(recognition);
+				respContent = "您发送的是语音消息！";
+				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
 //				VoiceMessage voiceMessage = new VoiceMessage();
 //				voiceMessage.setToUserName(fromUserName);
@@ -127,8 +160,7 @@ public class CoreService {
 			}
 			// 事件推送
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_EVENT)) {
-				// 事件类型，则带有阐述event,再次判断具体事件
-				// 事件类型  
+				// 事件类型event，则带有参数Eevent,再次判断具体事件类型
                 String eventType = requestMap.get("Event");  
                 // 订阅  
                 if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {  
@@ -148,10 +180,10 @@ public class CoreService {
                         respContent = "天气预报菜单项被点击！";  
                     } else if (eventKey.equals("12")) {  
                         respContent = "公交查询菜单项被点击！";  
-                    } else if (eventKey.equals("13")) {  
+                    } else if (eventKey.equals("13")) {
                         respContent = "周边搜索菜单项被点击！";  
                     } else if (eventKey.equals("14")) {
-                    	respContent = TodayInHistoryService.getTodayInHistoryInfo();
+                    	respContent = TodayInHistoryService.getTodayInHistoryInfo();//为保证合法长度，这里截取了
 //                        respContent = "历史上的今天菜单项被点击！";  
                     } else if (eventKey.equals("21")) {  
                         respContent = "歌曲点播菜单项被点击！";  
@@ -187,7 +219,7 @@ public class CoreService {
 	 */
 	public static String getMainMenu() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("您好，我是小q，请回复数字选择服务：").append("\n\n");
+		buffer.append("您好,我是小q,请选择服务：").append("\n");
 		buffer.append("1  天气预报").append("\n");
 		buffer.append("2  公交查询").append("\n");
 		buffer.append("3  周边搜索").append("\n");
@@ -195,8 +227,8 @@ public class CoreService {
 		buffer.append("5  经典游戏").append("\n");
 		buffer.append("6  美女电台").append("\n");
 		buffer.append("7  人脸识别").append("\n");
-		buffer.append("8  聊天唠嗑").append("\n\n");
-		buffer.append("回复“?”显示此帮助菜单");
+		buffer.append("8  聊天唠嗑").append("\n");
+		buffer.append("? 显示此帮助菜单");
 		return buffer.toString();
 	}
 	
@@ -208,5 +240,10 @@ public class CoreService {
      */  
     public static String emoji(int hexEmoji) {  
         return String.valueOf(Character.toChars(hexEmoji));  
+    }
+    
+    public static void main(String args[]){
+    	String content = getMainMenu();
+    	System.out.println(content);
     }
 }

@@ -61,10 +61,12 @@ public class CoreService {
 				String content = requestMap.get("Content");
 				LOGGER.info("发送的文本消息的内容："+content);
 				
-				if(content.equals("菜单")){//返回导航菜单(以后补充菜单功能)
+				if(content.equals("?")){//返回导航菜单
 					textMessage.setContent(getMainMenu());
 					respMessage = MessageUtil.textMessageToXml(textMessage);
-				}else if(content.equals("您好")){//原样返回发送过来的内容
+				}else if(content.startsWith("翻译")){//翻译
+					String src = content.substring(2);//"翻译我爱你"，则src保留"我爱你"
+					respContent = BaiduTranslateService.getTranslateResult(src);
 					textMessage.setContent(content);
 					respMessage = MessageUtil.textMessageToXml(textMessage);
 				}else{//否则返回我想推送的图文消息
@@ -164,7 +166,7 @@ public class CoreService {
                 String eventType = requestMap.get("Event");  
                 // 订阅  
                 if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {  
-                    respContent = "谢谢您的关注！"; 
+                    respContent = "感谢您的关注\n"+getMainMenu(); 
                     textMessage.setContent(respContent);
     				respMessage = MessageUtil.textMessageToXml(textMessage);
                 }  
@@ -185,8 +187,9 @@ public class CoreService {
                     } else if (eventKey.equals("14")) {
                     	respContent = TodayInHistoryService.getTodayInHistoryInfo();//为保证合法长度，这里截取了
 //                      respContent = "历史上的今天菜单项被点击！";  
-                    } else if (eventKey.equals("21")) {  
-                        respContent = "歌曲点播菜单项被点击！";  
+                    } else if (eventKey.equals("21")) { 
+                    	
+//                       respContent = "歌曲点播菜单项被点击！";  
                     } else if (eventKey.equals("22")) {  
                         respContent = "经典游戏菜单项被点击！";  
                     } else if (eventKey.equals("23")) {  

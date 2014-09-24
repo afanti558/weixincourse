@@ -108,7 +108,7 @@ public class MenuManager {
 		btn33.setKey("33");
 		//lxf
 		CommonViewButton btn34 = new CommonViewButton();
-		btn34.setName("幽默笑话");
+		btn34.setName("百度链接");
 		btn34.setType("view");
 		btn34.setUrl("http://baidu.com");
 

@@ -100,6 +100,18 @@ public class TodayInHistoryService {
 		return (null == buffer) ? null : buffer.substring(0, buffer.lastIndexOf("\n\n"));
 	}
 
+
+	/**
+	 * 通过main在本地测试
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		String info = getTodayInHistoryInfo();
+		log.info("info::::"+info);
+	}
+		
+
 	/**
 	 * 获取前/后n天日期(M月d日)
 	 * 
@@ -125,13 +137,4 @@ public class TodayInHistoryService {
 		return result;
 	}
 
-	/**
-	 * 通过main在本地测试
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		String info = getTodayInHistoryInfo();
-		System.out.println(info);
-	}
 }

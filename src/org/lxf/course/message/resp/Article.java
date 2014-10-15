@@ -21,23 +21,23 @@ public class Article {
 	//full,方便测试
 	public Article(String title, String description, String picUrl, String url) {
 		super();
-		Title = title;
-		Description = description;
-		PicUrl = picUrl;
-		Url = url;
+		this.Title = title;
+		this.Description = description;
+		this.PicUrl = picUrl;
+		this.Url = url;
 	}
 	
 	public String getTitle() {
-		return Title;
+		return this.Title;
 	}
 
 
 	public void setTitle(String title) {
-		Title = title;
+		this.Title = title;
 	}
 
 	public String getDescription() {
-		return null == Description ? "" : Description;
+		return null == this.Description ? "" : this.Description;
 	}
 
 	public void setDescription(String description) {

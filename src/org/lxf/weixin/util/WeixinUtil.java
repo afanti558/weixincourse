@@ -18,13 +18,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
-
 import org.lxf.weixin.pojo.AccessToken;
 import org.lxf.weixin.pojo.Menu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * 公众平台通用接口工具类
@@ -37,77 +36,61 @@ public class WeixinUtil {
 
 	
 	// 获取access_token的接口地址（GET） 限200（次/天）
-	public final static String access_token_url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";
+	public static final String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";
 	// 菜单创建（POST） 限100（次/天）
-	public static String menu_create_url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN";
+	public static String MENU_CREATE_URL = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN";
 	// 媒体文件上传（POST/FORM）
-	public static String media_upload_url = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
+	public static String MEDIA_UPLOAD_URL = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
+	
 	/**
 	 * 创建菜单
-	 * 
 	 * @param menu 菜单实例
 	 * @param accessToken 有效的access_token
 	 * @return 0表示成功，其他值表示失败
 	 */
-	public static int createMenu(Menu menu, String accessToken) {
-		log.info("开始创建菜单");
-		int result = 0;
-
+	public static String createMenu(Menu menu, String accessToken) {
+		String result = "";
 		// 拼装创建菜单的url
-		String url = menu_create_url.replace("ACCESS_TOKEN", accessToken);
+		String url = MENU_CREATE_URL.replace("ACCESS_TOKEN", accessToken);
 		// 将菜单对象转换成json字符串
-		String jsonMenu = JSONObject.fromObject(menu).toString();
-		log.info("*********"+jsonMenu);
-		
+		String jsonMenu = JSONObject.toJSONString(menu);
 		// 调用接口创建菜单
-		log.info("调用接口发起POST请求");
 		JSONObject jsonObject = httpsRequests(url, "POST", jsonMenu);
-//		JSONObject jsonObject = null;
 		if (null != jsonObject) {
-			if (0 != jsonObject.getInt("errcode")) {
-				result = jsonObject.getInt("errcode");
-				log.error("创建菜单失败 errcode:{} errmsg:{}", jsonObject.getInt("errcode"), jsonObject.getString("errmsg"));
+			if (0 != jsonObject.getIntValue("errcode")) {
+				result = "创建菜单失败:" + jsonObject.getString("errcode") + "," + jsonObject.getString("errmsg");
+				log.info("创建菜单失败:", jsonObject.getString("errcode"), jsonObject.getString("errmsg"));
 			}
-			log.info("创建菜单成功");
+			result = "创建菜单成功.";
+			log.info("创建菜单成功.");
 		}
 		return result;
 	}
 	
 	/**
 	 * 获取access_token
-	 * 
+	 * access_token是公众号的全局唯一票据，公众号调用各接口时都需使用access_token
 	 * @param appid 凭证
 	 * @param appsecret 密钥
 	 * @return
 	 */
 	public static AccessToken getAccessToken(String appid, String appsecret) {
-		log.info("开始获取token");
 		AccessToken accessToken = null;
-
-		String requestUrl = access_token_url.replace("APPID", appid).replace("APPSECRET", appsecret);
-		log.info("调用接口发起GET请求");
+		String requestUrl = ACCESS_TOKEN_URL.replace("APPID", appid).replace("APPSECRET", appsecret);
 		JSONObject jsonObject = httpsRequests(requestUrl, "GET", null);
-//		JSONObject jsonObject = null;
 		// 如果请求成功
 		if (null != jsonObject) {
-			try {
-				accessToken = new AccessToken();
-				accessToken.setToken(jsonObject.getString("access_token"));
-				accessToken.setExpiresIn(jsonObject.getInt("expires_in"));
-			} catch (JSONException e) {
-				accessToken = null;
-				// 获取token失败
-				log.error("获取token失败 errcode:{} errmsg:{}", jsonObject.getInt("errcode"), jsonObject.getString("errmsg"));
+			if(jsonObject.getString("errcode") == null){//没有错误码返回说明返回成功
+				accessToken = JSONObject.toJavaObject(jsonObject, AccessToken.class);
+			}else{
+				log.info("获取accessToken失败," + jsonObject.getString("errcode") + "," + jsonObject.getString("errmsg"));
 			}
 		}
-		log.info("获取token成功："+accessToken);
 		return accessToken;
 	}
 	
-	
 	/**
 	 * 发起https请求并获取结果
-	 * 
 	 * @param requestUrl 请求地址
 	 * @param requestMethod 请求方式（GET、POST）
 	 * @param outputStr 提交的数据
@@ -160,21 +143,22 @@ public class WeixinUtil {
 			inputStream.close();
 			inputStream = null;
 			httpsUrlConn.disconnect();
-			jsonObject = JSONObject.fromObject(buffer.toString());
+			//json格式字符串转换为json对象
+			jsonObject = JSONObject.parseObject(buffer.toString());
 		} catch (ConnectException ce) {
-			log.error("Weixin server connection timed out.");
+			System.out.println("Weixin server connection timed out.");
 		} catch (Exception e) {
-			log.error("https request error:{}", e);
+			System.out.println("https request error:{}" + e);
 		}
 		return jsonObject;
 	}
 	
 	/**
-     * 发起http请求调用文件接口接口
+     * 发起http POST请求调用文件接口接口实现多媒体文件的上传
      * @requestUrl 请求的URL
      * @param fileType 文件类型
      * @param filePath 文件路径
-     * @return JSONObject
+     * @return JSONObject 返回的json格式结果
      * @throws Exception
      */
     public static JSONObject httpRequests(String requestUrl, String fileType, String filePath) throws Exception {  
@@ -182,11 +166,9 @@ public class WeixinUtil {
         String result = null;  
         File file = new File(filePath);  
         if (!file.exists() || !file.isFile()) {  
-            throw new IOException("文件不存在");  
+            System.out.println("文件不存在");  
         }  
-        /** 
-        * 第一部分 
-        */  
+        
         URL url = new URL(requestUrl);  
         HttpURLConnection httpUrlConn = (HttpURLConnection) url.openConnection();  
         httpUrlConn.setRequestMethod("POST"); // 以Post方式提交表单，默认get方式  
@@ -197,23 +179,20 @@ public class WeixinUtil {
         httpUrlConn.setRequestProperty("Connection", "Keep-Alive");  
         httpUrlConn.setRequestProperty("Charset", "UTF-8");  
         // 设置边界  
-        String BOUNDARY = "----------" + System.currentTimeMillis();  
+        String BOUNDARY = ""+System.currentTimeMillis();  //随机生成数字或字母
         httpUrlConn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+ BOUNDARY);  
-        // 请求正文信息  
-        // 第一部分：  
+        // 开头部分
         StringBuilder sb = new StringBuilder();  
         sb.append("--"); // 必须多两道线  
         sb.append(BOUNDARY);  
-        sb.append("\r\n");  
+        sb.append("\r\n");  //回车换行System.getProperty("line.separator")
         sb.append("Content-Disposition: form-data;name=\"file\";filename=\""+ file.getName() + "\"\r\n");  
-        sb.append("Content-Type:application/octet-stream\r\n\r\n");  
+        sb.append("Content-Type:application/octet-stream\r\n\r\n"); 
+        System.out.print(sb);
         byte[] head = sb.toString().getBytes("utf-8");  
-        // 获得输出流  
         OutputStream out = new DataOutputStream(httpUrlConn.getOutputStream());  
-        // 输出表头  
         out.write(head);  
-        // 文件正文部分  
-        // 把文件以流文件的方式 推入到url中  
+        // 文件正文部分     把文件以流文件的方式 推入到url中  
         DataInputStream in = new DataInputStream(new FileInputStream(file));  
         int bytes = 0;  
         byte[] bufferOut = new byte[1024];  
@@ -221,8 +200,10 @@ public class WeixinUtil {
         	out.write(bufferOut, 0, bytes);  
         }  
         in.close();  
+        System.out.print("推送的正文部分，以流的方式");
         // 结尾部分  
-        byte[] foot = ("\r\n--" + BOUNDARY + "--\r\n").getBytes("utf-8");// 定义最后数据分隔线  
+        byte[] foot = ("\r\n--" + BOUNDARY).getBytes("utf-8");// 定义最后数据分隔线  
+        System.out.print("\r\n--" + BOUNDARY);
         out.write(foot);  
         out.flush();  
         out.close();  
@@ -233,7 +214,6 @@ public class WeixinUtil {
 	        reader = new BufferedReader(new InputStreamReader(httpUrlConn.getInputStream()));  
 	        String line = null;  
 	        while ((line = reader.readLine()) != null) {  
-		        //System.out.println(line);  
 		        buffer.append(line);  
 	        }  
 	        if(result==null){  
@@ -247,17 +227,17 @@ public class WeixinUtil {
 	        if(reader!=null){  
 	        	reader.close();  
 	        }  
-        }  
-        jsonObject = JSONObject.fromObject(buffer.toString());  
+        } 
+        jsonObject = (JSONObject) JSONObject.parseObject(buffer.toString());
         return jsonObject;  
     }
     
+    //Test
     public static void main(String args[]) throws Exception{
-//    	public static String media_upload_url = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
-    	String requestUrl = media_upload_url.replace("ACCESS_TOKEN", "dZO-wSB7St1B7SjzplzZ23gN_SAV2tvrlE_c8DRQ4FkN5C-ueYN_vG0s7sqZMziZJG4rO3gvqrnWtFeRxs850g").replace("TYPE", "voice");
-    	String filePath = "G:"+File.separator+"hello.mp3";
-    	String fileType = "mp3";
-    	JSONObject jsonObject = httpRequests(requestUrl, fileType, filePath);
-    	System.out.println("*****"+jsonObject.toString());
+//    	System.out.println("获取到的accessToken:" + getAccessToken("wx65d73e5e3d662b5d","f628212e882ee6a7aa984906e190dc50"));
+    	String requestUrl = MEDIA_UPLOAD_URL.replace("ACCESS_TOKEN", "p-cPV7BkPukGkq7q-h0HFoyGNnDsUwvb-HIJaNIS1KTLCu5i4p4meklwCJ98pdUe4iiKSOFC-WZIuodvJjs9Tw")
+    			.replace("TYPE", "image");
+    	
+    	System.out.println("\r\n" + httpRequests(requestUrl,"mp3","G:\\hello.mp3"));
     }
 }

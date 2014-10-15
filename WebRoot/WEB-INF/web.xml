@@ -3,39 +3,21 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
 	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-
+<!-- 配置日志 -->
 	<context-param>
 		<param-name>log4jConfigLoaction</param-name>
 		<param-value>classpath:log4j.properties</param-value>
 	</context-param>
-	
+<!-- servlet配置 -->
 	<servlet>
 		<servlet-name>coreServlet</servlet-name>
 		<servlet-class>org.lxf.course.servlet.CoreServlet</servlet-class>
 	</servlet>
 
-	<!-- url-pattern中配置的/coreServlet用于指定该Servlet的访问路径 -->
+<!-- url-pattern中配置的/coreServlet用于指定该Servlet的访问路径 -->
 	<servlet-mapping>
 		<servlet-name>coreServlet</servlet-name>
 		<url-pattern>/coreServlet</url-pattern>
 	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>*.css</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>*.gif</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>*.jpg</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>*.js</url-pattern>
-	</servlet-mapping>
-	<welcome-file-list>
-		<welcome-file>index.jsp</welcome-file>
-	</welcome-file-list>
+
 </web-app>

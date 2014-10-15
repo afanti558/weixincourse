@@ -18,21 +18,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 核心服务类
- * 
+ * 核心服务类,处理微信发来的各类请求
  * @author lxf
  * @date 2013-05-20
  */
-public class CoreService {
-	private static final Logger LOGGER = LoggerFactory.getLogger(CoreService.class);
+public class CoreServiceImpl implements ICoreService{
 	
 	/**
-	 * 处理微信发来的请求
-	 * 
+	 * 处理微信发来的各类请求
 	 * @param request
 	 * @return
 	 */
-	public static String processRequest(HttpServletRequest request) {
+	public String processRequest(HttpServletRequest request) {
 		String respMessage = null;
 		try {
 			// 默认返回的文本消息内容：菜单
@@ -45,7 +42,9 @@ public class CoreService {
 			String toUserName = requestMap.get("ToUserName");
 			// 消息类型
 			String msgType = requestMap.get("MsgType");
-			LOGGER.info("消息来自于："+fromUserName+"，消息发送给："+toUserName+"，用户发来消息，类型:"+msgType);
+			// 消息id，64位整型
+			String msgId = requestMap.get("MsgId");
+			System.out.println("消息来源："+fromUserName+"，消息去向："+toUserName+"，消息类型:"+msgType+"，消息id:"+msgId);
 
 			//默认情况下返回的文本内容
 			TextMessage textMessage = new TextMessage();
@@ -59,13 +58,13 @@ public class CoreService {
 			if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_TEXT)) {
 				//发送过来的文本内容
 				String content = requestMap.get("Content");
-				LOGGER.info("发送的文本消息的内容："+content);
+				System.out.println("发送的文本消息的内容："+content);
 				
 				if(content.equals("?")){//返回导航菜单
 					textMessage.setContent(getMainMenu());
 					respMessage = MessageUtil.textMessageToXml(textMessage);
 				}else if(content.startsWith("翻译")){//翻译
-					String src = content.substring(2);//"翻译我爱你"，则src保留"我爱你"
+					String src = content.substring(2);//例如："翻译我喜欢小狗"，则src保留"我喜欢小狗"
 					respContent = BaiduTranslateService.getTranslateResult(src);
 					textMessage.setContent(content);
 					respMessage = MessageUtil.textMessageToXml(textMessage);
@@ -77,24 +76,26 @@ public class CoreService {
 					news.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_NEWS);
 					news.setFuncFlag(0);
 					List<Article> articleList = new ArrayList<Article>();
-					Article article = new Article("图文消息之一，单图文","单图文可以显示出描述的内容",
+					Article article1 = new Article("图文消息标题","多图文不可以显示出描述的内容",
 							"http://img1.imgtn.bdimg.com/it/u=3565455087,2166573950&fm=21&gp=0.jpg",
 							"http://blog.csdn.net/lyq8479/article/details/9393195");
-					articleList.add(article);
-					news.setArticleCount(articleList.size());
+					Article article2 = new Article("图文消息标题","多图文不可以显示出描述的内容",
+							"http://img1.imgtn.bdimg.com/it/u=3565455087,2166573950&fm=21&gp=0.jpg",
+							"http://blog.csdn.net/lyq8479/article/details/9393195");
+					articleList.add(article1);
+					articleList.add(article2);
+					news.setArticleCount(articleList.size());//图文消息个数
 					news.setArticles(articleList);
 					respMessage = MessageUtil.newsMessageToXml(news); 
 				}
-			}
-			// 图片消息
-			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {
+			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {// 图片消息
 				//图片消息媒体id，可以调用多媒体文件下载接口拉取数据
 				String mediaId = requestMap.get("MediaId");
 				//图片链接
 				String picUrl = requestMap.get("PicUrl");
 				//消息id，64位整型
 				String msgID = requestMap.get("MsgID");
-				LOGGER.info("发送的图片消息链接(PicUrl)为:"+picUrl);
+				System.out.println("发送的图片消息链接(PicUrl)为:"+picUrl);
 				
 				respContent = "您发送的是图片消息！";
 				textMessage.setContent(respContent);
@@ -112,7 +113,7 @@ public class CoreService {
 				String label = requestMap.get("Label");
 				//消息id，64位整型
 				String msgID = requestMap.get("MsgID");
-				LOGGER.info("发送的地理位置纬度(Location_X)为:"+location_x+"，发送的地理位置经度(Location_Y)为:"+location_y+"，地图缩放大小(Scale)为："+scale);
+				System.out.println("发送的地理位置纬度(Location_X)为:"+location_x+"，发送的地理位置经度(Location_Y)为:"+location_y+"，地图缩放大小(Scale)为："+scale);
 				
 				respContent = "您发送的是地理位置消息！";
 				textMessage.setContent(respContent);
@@ -128,7 +129,7 @@ public class CoreService {
 				String url = requestMap.get("Url");
 				//消息id，64位整型
 				String msgID = requestMap.get("MsgID");
-				LOGGER.info("发送的链接消息的标题(Title)为:"+title+"，链接的描述(Description)为："+description+",链接的地址(Url)为："+url);
+				System.out.println("发送的链接消息的标题(Title)为:"+title+"，链接的描述(Description)为："+description+",链接的地址(Url)为："+url);
 				
 				respContent = "您发送的是链接消息！";
 				textMessage.setContent(respContent);
@@ -145,7 +146,7 @@ public class CoreService {
 				//识别之后的内容(语音识别接口没有开通)
 //				String recognition = requestMap.get("Recognition");
 //				LOGGER.info("发送的语音消息的媒体id(MediaId)为:"+mediaId+"，识别之后的内容(Recognition)为："+recognition+",语音格式(format)为："+format);
-				LOGGER.info("发送的语音消息的媒体id(MediaId)为:"+mediaId+",语音格式(format)为："+format);
+				System.out.println("发送的语音消息的媒体id(MediaId)为:"+mediaId+",语音格式(format)为："+format);
 				
 //				textMessage.setContent(recognition);
 				respContent = "您发送的是语音消息！";
@@ -162,13 +163,20 @@ public class CoreService {
 			}
 			// 事件推送
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_EVENT)) {
-				// 事件类型event，则带有参数Eevent,再次判断具体事件类型
+				// 若事件类型event，则带有参数Eevent,再次判断具体事件类型
                 String eventType = requestMap.get("Event");  
                 // 订阅  
                 if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {  
-                    respContent = "感谢您的关注\n"+getMainMenu(); 
-                    textMessage.setContent(respContent);
-    				respMessage = MessageUtil.textMessageToXml(textMessage);
+                	//首次关注推送个单图文过去
+                	NewsMessage news = new NewsMessage();
+                	List<Article> articleList = new ArrayList<Article>();
+                	Article article = new Article("消息标题","请发送'？'查看更多",
+							"http://img1.imgtn.bdimg.com/it/u=3565455087,2166573950&fm=21&gp=0.jpg",
+							"http://blog.csdn.net/lyq8479/article/details/9393195");
+                	articleList.add(article);
+                	news.setArticles(articleList);
+                	news.setArticleCount(1);
+                	respMessage = MessageUtil.newsMessageToXml(news);
                 }  
                 // 取消订阅  
                 else if (eventType.equals(MessageUtil.EVENT_TYPE_UNSUBSCRIBE)) {  
@@ -188,8 +196,7 @@ public class CoreService {
                     	respContent = TodayInHistoryService.getTodayInHistoryInfo();//为保证合法长度，这里截取了
 //                      respContent = "历史上的今天菜单项被点击！";  
                     } else if (eventKey.equals("21")) { 
-                    	
-//                       respContent = "歌曲点播菜单项被点击！";  
+                       respContent = "歌曲点播菜单项被点击！";  
                     } else if (eventKey.equals("22")) {  
                         respContent = "经典游戏菜单项被点击！";  
                     } else if (eventKey.equals("23")) {  
@@ -205,10 +212,10 @@ public class CoreService {
                     } else if (eventKey.equals("33")) {  
                         respContent = "幽默笑话菜单项被点击！";  
                     } 
-//                    34为view类型的菜单，在创建菜单的时候已经定义好了点击动作(直接跳转)，这里不需要第三方再次进行干预
+                    // 34为view类型的菜单，在创建菜单的时候已经定义好了点击动作(直接跳转)，这里不需要第三方再次进行响应
+                    textMessage.setContent(respContent);
+                    respMessage = MessageUtil.textMessageToXml(textMessage);
                 } 
-                textMessage.setContent(respContent);
-    			respMessage = MessageUtil.textMessageToXml(textMessage);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -218,7 +225,6 @@ public class CoreService {
 	
 	/**
 	 * 主菜单
-	 * 
 	 * @return
 	 */
 	public static String getMainMenu() {
@@ -236,16 +242,6 @@ public class CoreService {
 		return buffer.toString();
 	}
 	
-	/** 
-     * emoji表情转换(hex -> utf-16) 
-     *  
-     * @param hexEmoji 
-     * @return 
-     */  
-    public static String emoji(int hexEmoji) {  
-        return String.valueOf(Character.toChars(hexEmoji));  
-    }
-    
     public static void main(String args[]){
     	String content = getMainMenu();
     	System.out.println(content);

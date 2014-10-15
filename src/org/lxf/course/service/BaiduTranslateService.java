@@ -9,7 +9,8 @@ import java.net.URL;
 
 import org.lxf.weixin.pojo.TranslateResult;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSONObject;
+
 
 /**
  * 
@@ -91,8 +92,9 @@ public class BaiduTranslateService {
 		try {
 			// 查询并获取返回结果
 			String json = httpRequest(requestUrl);
+			new JSONObject();
 			// 通过Gson工具将json转换成TranslateResult对象
-			TranslateResult translateResult = new Gson().fromJson(json, TranslateResult.class);
+			TranslateResult translateResult = (TranslateResult) JSONObject.parse(json);
 			// 取出translateResult中的译文
 			det = translateResult.getTrans_result().get(0).getDst();
 		} catch (Exception e) {
@@ -104,7 +106,7 @@ public class BaiduTranslateService {
 	}
 
 	/**
-	 * 对我接口
+	 * 对外接口
 	 * author linxiaofan
 	 * @param src
 	 * @return

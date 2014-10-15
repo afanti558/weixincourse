@@ -1,4 +1,4 @@
-package org.lxf.weixin.menu.main;
+package org.lxf.weixin.menu;
 
 import org.lxf.weixin.pojo.AccessToken;
 import org.lxf.weixin.pojo.Button;
@@ -7,46 +7,42 @@ import org.lxf.weixin.pojo.CommonViewButton;
 import org.lxf.weixin.pojo.ComplexButton;
 import org.lxf.weixin.pojo.Menu;
 import org.lxf.weixin.util.WeixinUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * 菜单管理器类
- * 
+ * 菜单管理器类(创建)
  * @author lxf
  * @date 2013-08-08
  */
 public class MenuManager {
-	private static Logger log = LoggerFactory.getLogger(MenuManager.class);
 
-	public static void main_createMenu(String[] args) {
+	public static void createMenu() {
 		// 第三方用户唯一凭证
 		String appId = "wx65d73e5e3d662b5d";
 		// 第三方用户唯一凭证密钥
 		String appSecret = "f628212e882ee6a7aa984906e190dc50";
-
 		// 调用接口获取access_token
 		AccessToken at = WeixinUtil.getAccessToken(appId, appSecret);
-
 		if (null != at) {
 			// 调用接口创建菜单
-			int result = WeixinUtil.createMenu(getMenu(), at.getToken());
-
+			String result = WeixinUtil.createMenu(getMenu(), at.getAccess_token());
 			// 判断菜单创建结果
-			if (0 == result)
-				log.info("菜单创建成功！");
+			if (result != "")
+				System.out.println("菜单创建成功！");
 			else
-				log.info("菜单创建失败，错误码：" + result);
+				System.out.println("菜单创建失败:" + result);
 		}
 	}
 
+	public static void main(String args[]){
+		createMenu();
+			
+	}
+	
 	/**
 	 * 组装菜单数据
-	 * 
 	 * @return
 	 */
 	private static Menu getMenu() {
-		log.info("开始组装菜单");
 		CommonButton btn11 = new CommonButton();
 		btn11.setName("天气预报");
 		btn11.setType("click");
@@ -108,12 +104,13 @@ public class MenuManager {
 		btn33.setKey("33");
 		//lxf
 		CommonViewButton btn34 = new CommonViewButton();
-		btn34.setName("百度链接");
+		btn34.setName("百度搜索");
 		btn34.setType("view");
 		btn34.setUrl("http://baidu.com");
 
+		//三个以及菜单
 		ComplexButton mainBtn1 = new ComplexButton();
-		mainBtn1.setName("生活助手");
+		mainBtn1.setName("生活助理");
 		mainBtn1.setSub_button(new CommonButton[] { btn11, btn12, btn13, btn14 });
 
 		ComplexButton mainBtn2 = new ComplexButton();
@@ -133,7 +130,6 @@ public class MenuManager {
 		 */
 		Menu menu = new Menu();
 		menu.setButton(new Button[] { mainBtn1, mainBtn2, mainBtn3 });
-		log.info("组装菜单成功"+menu);
 		return menu;
 	}
 }

@@ -8,14 +8,16 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.lxf.course.message.resp.Article;
-import org.lxf.course.message.resp.Music;
-import org.lxf.course.message.resp.MusicMessage;
+import org.lxf.course.message.resp.KF_Text;
+import org.lxf.course.message.resp.KF_TextMessage;
 import org.lxf.course.message.resp.NewsMessage;
 import org.lxf.course.message.resp.TextMessage;
-import org.lxf.course.message.resp.VoiceMessage;
 import org.lxf.weixin.util.MessageUtil;
+import org.lxf.weixin.util.WeixinUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * 核心服务类,处理微信发来的各类请求
@@ -23,13 +25,15 @@ import org.slf4j.LoggerFactory;
  * @date 2013-05-20
  */
 public class CoreServiceImpl implements ICoreService{
+	private static final Logger LOG = LoggerFactory.getLogger(CoreServiceImpl.class);
 	
 	/**
 	 * 处理微信发来的各类请求
-	 * @param request
-	 * @return
+	 * @param request 发送过来的请求
+	 * @return 
 	 */
 	public String processRequest(HttpServletRequest request) {
+		System.out.println("处理微信消息");
 		String respMessage = null;
 		try {
 			// 默认返回的文本消息内容：菜单
@@ -56,17 +60,11 @@ public class CoreServiceImpl implements ICoreService{
 			
 			// 文本消息
 			if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_TEXT)) {
-				//发送过来的文本内容
 				String content = requestMap.get("Content");
-				System.out.println("发送的文本消息的内容："+content);
+				System.out.println("发送过来的文本消息的内容："+content);
 				
 				if(content.equals("?")){//返回导航菜单
 					textMessage.setContent(getMainMenu());
-					respMessage = MessageUtil.textMessageToXml(textMessage);
-				}else if(content.startsWith("翻译")){//翻译
-					String src = content.substring(2);//例如："翻译我喜欢小狗"，则src保留"我喜欢小狗"
-					respContent = BaiduTranslateService.getTranslateResult(src);
-					textMessage.setContent(content);
 					respMessage = MessageUtil.textMessageToXml(textMessage);
 				}else{//否则返回我想推送的图文消息
 					NewsMessage news = new NewsMessage();
@@ -78,17 +76,13 @@ public class CoreServiceImpl implements ICoreService{
 					List<Article> articleList = new ArrayList<Article>();
 					Article article1 = new Article("图文消息标题","多图文不可以显示出描述的内容",
 							"http://img1.imgtn.bdimg.com/it/u=3565455087,2166573950&fm=21&gp=0.jpg",
-							"http://blog.csdn.net/lyq8479/article/details/9393195");
-					Article article2 = new Article("图文消息标题","多图文不可以显示出描述的内容",
-							"http://img1.imgtn.bdimg.com/it/u=3565455087,2166573950&fm=21&gp=0.jpg",
-							"http://blog.csdn.net/lyq8479/article/details/9393195");
+							"http://js.wwz114.cn/weixincourse/");//跳转到我测试的页面
 					articleList.add(article1);
-					articleList.add(article2);
 					news.setArticleCount(articleList.size());//图文消息个数
 					news.setArticles(articleList);
 					respMessage = MessageUtil.newsMessageToXml(news); 
 				}
-			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {// 图片消息
+			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {//发送的是图片消息
 				//图片消息媒体id，可以调用多媒体文件下载接口拉取数据
 				String mediaId = requestMap.get("MediaId");
 				//图片链接
@@ -100,9 +94,7 @@ public class CoreServiceImpl implements ICoreService{
 				respContent = "您发送的是图片消息！";
 				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
-			}
-			// 地理位置消息
-			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LOCATION)) {
+			}else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LOCATION)) {//发送的是地理位置消息
 				//地理位置维度
 				String location_x = requestMap.get("Location_X");
 				//地理位置经度
@@ -118,9 +110,7 @@ public class CoreServiceImpl implements ICoreService{
 				respContent = "您发送的是地理位置消息！";
 				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
-			}
-			// 链接消息
-			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LINK)) {
+			}else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LINK)) {// 链接消息
 				//消息标题
 				String title = requestMap.get("Title");
 				//消息描述
@@ -134,9 +124,7 @@ public class CoreServiceImpl implements ICoreService{
 				respContent = "您发送的是链接消息！";
 				textMessage.setContent(respContent);
 				respMessage = MessageUtil.textMessageToXml(textMessage);
-			}
-			// 音频消息
-			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_VOICE)) {
+			}else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_VOICE)) {// 音频消息
 				//语音消息媒体id，可以调用多媒体文件下载接口拉取数据
 				String mediaId = requestMap.get("MediaId");
 				//语音格式，如amr，speex等
@@ -160,9 +148,7 @@ public class CoreServiceImpl implements ICoreService{
 //				voiceMessage.setFuncFlag(0);
 //				voiceMessage.setMediaId(mediaId);//通过上传多媒体文件得到的id
 //				respMessage = MessageUtil.voiceMessageToXml(voiceMessage);
-			}
-			// 事件推送
-			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_EVENT)) {
+			}else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_EVENT)) {// 事件推送
 				// 若事件类型event，则带有参数Eevent,再次判断具体事件类型
                 String eventType = requestMap.get("Event");  
                 // 订阅  
@@ -170,7 +156,7 @@ public class CoreServiceImpl implements ICoreService{
                 	//首次关注推送个单图文过去
                 	NewsMessage news = new NewsMessage();
                 	List<Article> articleList = new ArrayList<Article>();
-                	Article article = new Article("消息标题","请发送'？'查看更多",
+                	Article article = new Article("欢迎关注","请发送'？'查看更多",
 							"http://img1.imgtn.bdimg.com/it/u=3565455087,2166573950&fm=21&gp=0.jpg",
 							"http://blog.csdn.net/lyq8479/article/details/9393195");
                 	articleList.add(article);
@@ -192,9 +178,6 @@ public class CoreServiceImpl implements ICoreService{
                         respContent = "公交查询菜单项被点击！";  
                     } else if (eventKey.equals("13")) {
                         respContent = "周边搜索菜单项被点击！";  
-                    } else if (eventKey.equals("14")) {
-                    	respContent = TodayInHistoryService.getTodayInHistoryInfo();//为保证合法长度，这里截取了
-//                      respContent = "历史上的今天菜单项被点击！";  
                     } else if (eventKey.equals("21")) { 
                        respContent = "歌曲点播菜单项被点击！";  
                     } else if (eventKey.equals("22")) {  
@@ -224,7 +207,7 @@ public class CoreServiceImpl implements ICoreService{
 	}
 	
 	/**
-	 * 主菜单
+	 * 当回复“？”时的提示菜单
 	 * @return
 	 */
 	public static String getMainMenu() {
@@ -241,9 +224,24 @@ public class CoreServiceImpl implements ICoreService{
 		buffer.append("? 显示此帮助菜单");
 		return buffer.toString();
 	}
+
+	@Override
+	public void processRequest_kfaccount(String touser,String content) {
+		String respMessage = "";
+		//客服发送文本内容
+		KF_Text kf_text = new KF_Text();
+		kf_text.setContent(content);
+		KF_TextMessage kf_textMessage = new KF_TextMessage();
+		kf_textMessage.setTouser(touser);
+		kf_textMessage.setText(kf_text);
+		kf_textMessage.setMsgtype(MessageUtil.RESP_MESSAGE_TYPE_TEXT);
+		respMessage = JSONObject.toJSONString(kf_textMessage);
+		WeixinUtil.KF_MessageProcess(respMessage);
+	}
 	
-    public static void main(String args[]){
-    	String content = getMainMenu();
-    	System.out.println(content);
-    }
+	public static void main(String[] args){
+//		String touser = "888888888888";
+//		System.out.println(processRequest_kfaccount(touser)); 
+	}
+	
 }

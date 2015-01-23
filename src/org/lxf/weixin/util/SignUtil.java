@@ -10,9 +10,6 @@ import java.util.Arrays;
  * @date 2013-05-18
  */
 public class SignUtil {
-	// 与接口配置信息中的Token要一致
-	private static String token = "weixinCourse";
-
 	/**
 	 * 验证签名
 	 * 加密/校验流程如下：
@@ -25,7 +22,7 @@ public class SignUtil {
 	 * @return
 	 */
 	public static boolean checkSignature(String signature, String timestamp, String nonce) {
-		String[] arr = new String[] { token, timestamp, nonce };
+		String[] arr = new String[] { WeixinConstant.TOKEN, timestamp, nonce };
 		Arrays.sort(arr);
 		StringBuilder content = new StringBuilder();
 		for (int i = 0; i < arr.length; i++) {

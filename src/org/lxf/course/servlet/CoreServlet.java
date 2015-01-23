@@ -8,34 +8,27 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.lxf.course.service.CoreServiceImpl;
 import org.lxf.weixin.util.SignUtil;
 
 /**
  * 核心请求处理类
- * 
  * @author lxf
  * @date 2013-05-18
  */
 public class CoreServlet extends HttpServlet {
-	private static final long serialVersionUID = 4440739483644821986L;
-	
-	/**	开发者中心填写的数据：
-		AppId: wx65d73e5e3d662b5d
-		AppSecret: f628212e882ee6a7aa984906e190dc50 
-		
-		URL:http://weixin.raipeng.com/weixincourse/coreServlet 微信服务器将发送GET请求到此URL上,携带四个参数
-		Token:weixinCourse
-	
-		access_token:lW9YY3QVVYvbgF7wmTlt7Qa895YR0u8FtQCf3VTkFKlbWNCub6zLGHWZufYDa5Q5pnYdjUSm1l-VM9ISDfeBRg
-	*/
-	
+
+	private static final long serialVersionUID = 6255286459341988140L;
+	private static final Logger LOG = LoggerFactory.getLogger(CoreServlet.class);
 	
 	/**
 	 * 确认请求来自微信服务器
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		System.out.println("**********doGet**********");
+		LOG.info("doGet确认请求来自微信服务器");
+		System.out.println("doGet确认请求来自微信服务器");
 		// 微信加密签名，signature结合了开发者填写的token参数和请求中的timestamp参数、nonce参数
 		String signature = request.getParameter("signature");
 		// 时间戳
@@ -55,11 +48,13 @@ public class CoreServlet extends HttpServlet {
 		out = null;
 	}
 
+	
 	/**
 	 * 接收、处理、响应微信服务器发送来的消息
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		System.out.println("**********doPost**********");
+		LOG.info("doPost接收、处理、响应微信服务器发送来的消息");
+		System.out.println("doPost接收、处理、响应微信服务器发送来的消息");
 		// 将请求、响应的编码均设置为UTF-8（防止中文乱码）  
         request.setCharacterEncoding("UTF-8");  
         response.setCharacterEncoding("UTF-8");  

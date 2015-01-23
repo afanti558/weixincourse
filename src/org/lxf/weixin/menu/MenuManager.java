@@ -6,7 +6,10 @@ import org.lxf.weixin.pojo.CommonButton;
 import org.lxf.weixin.pojo.CommonViewButton;
 import org.lxf.weixin.pojo.ComplexButton;
 import org.lxf.weixin.pojo.Menu;
+import org.lxf.weixin.util.WeixinConstant;
 import org.lxf.weixin.util.WeixinUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 菜单管理器类(创建)
@@ -14,14 +17,15 @@ import org.lxf.weixin.util.WeixinUtil;
  * @date 2013-08-08
  */
 public class MenuManager {
-
+	private static Logger LOG = LoggerFactory.getLogger(MenuManager.class);
+	
+		
+	public static void main(String args[]){
+		createMenu();
+	}
+	
 	public static void createMenu() {
-		// 第三方用户唯一凭证
-		String appId = "wx65d73e5e3d662b5d";
-		// 第三方用户唯一凭证密钥
-		String appSecret = "f628212e882ee6a7aa984906e190dc50";
-		// 调用接口获取access_token
-		AccessToken at = WeixinUtil.getAccessToken(appId, appSecret);
+		AccessToken at = WeixinUtil.getAccessToken(WeixinConstant.APPID, WeixinConstant.APPSECRET);
 		if (null != at) {
 			// 调用接口创建菜单
 			String result = WeixinUtil.createMenu(getMenu(), at.getAccess_token());
@@ -31,11 +35,6 @@ public class MenuManager {
 			else
 				System.out.println("菜单创建失败:" + result);
 		}
-	}
-
-	public static void main(String args[]){
-		createMenu();
-			
 	}
 	
 	/**
@@ -104,11 +103,11 @@ public class MenuManager {
 		btn33.setKey("33");
 		//lxf
 		CommonViewButton btn34 = new CommonViewButton();
-		btn34.setName("百度搜索");
+		btn34.setName("测试js页面");
 		btn34.setType("view");
-		btn34.setUrl("http://baidu.com");
+		btn34.setUrl("http://js.wwz114.cn/hotelms/");
 
-		//三个以及菜单
+		//三个一级菜单
 		ComplexButton mainBtn1 = new ComplexButton();
 		mainBtn1.setName("生活助理");
 		mainBtn1.setSub_button(new CommonButton[] { btn11, btn12, btn13, btn14 });
@@ -132,6 +131,9 @@ public class MenuManager {
 		menu.setButton(new Button[] { mainBtn1, mainBtn2, mainBtn3 });
 		return menu;
 	}
+	
+	 
+	
 }
 
 

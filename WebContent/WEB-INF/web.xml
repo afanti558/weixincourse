@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+  <context-param>
+    <param-name>log4jConfigLoaction</param-name>
+    <param-value>classpath:log4j.properties</param-value>
+  </context-param>
+  <servlet>
+    <servlet-name>coreServlet</servlet-name>
+    <servlet-class>org.lxf.course.servlet.CoreServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <description>调用js-sdk</description>
+    <display-name>MyServlet</display-name>
+    <servlet-name>MyServlet</servlet-name>
+    <servlet-class>org.lxf.course.servlet.MyServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <description>认证权限获取用户信息</description>
+    <display-name>OAutherizeServlet</display-name>
+    <servlet-name>OAutherizeServlet</servlet-name>
+    <servlet-class>org.lxf.course.servlet.OAutherizeServlet</servlet-class>
+  </servlet>
+  
+  
+  <servlet-mapping>
+    <servlet-name>coreServlet</servlet-name>
+    <url-pattern>/coreServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>MyServlet</servlet-name>
+    <url-pattern>/MyServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>OAutherizeServlet</servlet-name>
+    <url-pattern>/OAutherizeServlet</url-pattern>
+  </servlet-mapping>
+</web-app>
